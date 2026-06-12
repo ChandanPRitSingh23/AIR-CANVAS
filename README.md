@@ -23,6 +23,7 @@ air-canvas/
 │   ├── gestures.js
 │   ├── effects.js
 │   └── sounds.js
+|──logo.png
 ```      
 
 
