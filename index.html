@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title> faadfasda AI Hand Tracking Drawing</title>
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- MediaPipe -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+
+    <!-- Chart.js for FPS graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="dashboard">
+    <!-- ==================== SIDEBAR ==================== -->
+    <aside class="sidebar">
+        <div class="logo">
+            <span class="logo-icon">✋</span>
+            <span class="logo-text">Air Canvas <span class="pro-badge">Drawing</span></span>
+            <span class="version"></span>
+        </div>
+
+        <div class="user-welcome">
+            <div class="avatar">
+                <img src = "logo.png" alt="Air canvas logo">
+            </div>
+            <div class="welcome-text">
+                <span class="greeting">Welcome to</span>
+                <strong>Air Canvas Drawing</strong>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="#" class="nav-item active" data-tab="draw">🎨 Drawing Board</a>
+            <a href="#" class="nav-item" data-tab="ai">🤖 AI Detection</a>
+            <a href="#" class="nav-item" data-tab="gestures">✌️ Gesture Guide</a>
+            <a href="#" class="nav-item" data-tab="settings">⚙️ Settings</a>
+        </nav>
+
+        <div class="sidebar-info">
+            <a href="#" class="info-link">📄 Documentation</a>
+            <a href="#" class="info-link">ℹ️ About Project</a>
+        </div>
+
+        <div class="ai-status-card">
+            <div class="status-header">
+                <span class="status-dot running"></span>
+                <span>AI Model Status</span>
+            </div>
+            <div class="status-label">Hand tracking is running</div>
+            <div class="status-model">Model: MediaPipe Hands</div>
+            <div class="status-confidence">
+                <span>Confidence:</span>
+                <span class="conf-value" id="confidenceValue">97</span>%
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceFill" style="width: 97%"></div>
+                </div>
+            </div>
+        </div>
+<!--
+        <div class="github-section">
+            <div class="github-heart">❤️ Love this project?</div>
+            <a href="#" class="github-star-btn">⭐ Give it a star on GitHub</a>
+        </div> -->
+
+        <div class="github-section">
+    <div class="github-heart">
+        ❤️ Love this project? |. ⭐ Star this Project on GitHub
+    </div>
+
+    <a href="https://github.com/ChandanPRitSingh23/AIR----CANVAS"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="github-star-btn">
+
+        🚀 View Source Code ↗
+
+    </a>
+</div>
+    </aside>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content">
+        <div class="top-bar">
+            <h1 class="page-title" id="pageTitle">Drawing Board</h1>
+            <button class="top-btn" id="fullscreenBtn">⛶ Fullscreen</button>
+        </div>
+
+        <p class="subtitle">Draw, erase, and place text using simple hand gestures ✨</p>
+
+        <!-- ===== DRAWING TAB ===== -->
+        <div class="tab-content" id="drawTab">
+            <div class="workspace">
+                <!-- Left Panel - Tools -->
+                <div class="tools-panel">
+                    <div class="section-title">🎨 Drawing Tools</div>
+                    
+                    <div class="tool-group">
+                        <label>Colors</label>
+                        <div class="color-palette" id="colorPalette">
+                            <button class="color-btn active" data-color="#ffffff" style="background:#ffffff;"></button>
+                            <button class="color-btn" data-color="#ff4d4d" style="background:#ff4d4d;"></button>
+                            <button class="color-btn" data-color="#00bfff" style="background:#00bfff;"></button>
+                            <button class="color-btn" data-color="#00ff7f" style="background:#00ff7f;"></button>
+                            <button class="color-btn" data-color="#ffff00" style="background:#ffff00;"></button>
+                            <button class="color-btn" data-color="#ff00ff" style="background:#ff00ff;"></button>
+                            <button class="color-btn" data-color="#ff8800" style="background:#ff8800;"></button>
+                            <button class="color-btn" data-color="#9b59b6" style="background:#9b59b6;"></button>
+                        </div>
+                    </div>
+
+                    <div class="tool-group">
+                        <label>Brush Size <span id="brushSizeValue">8</span>px</label>
+                        <input type="range" id="brushSizeSlider" min="2" max="30" value="8" class="slider">
+                    </div>
+
+                    <div class="tool-group">
+                        <label>Mode</label>
+                        <select id="brushMode" class="mode-select">
+                            <option value="normal">Normal ✏️</option>
+                            <option value="rainbow">🌈 Rainbow</option>
+                            <option value="glow">✨ Glow</option>
+                            <option value="spray">💨 Spray</option>
+                        </select>
+                    </div>
+
+                    <div class="tool-group">
+                        <label>Text in Air</label>
+                        <div class="text-input-group">
+                            <input type="text" id="textInput" placeholder="Type your text...">
+                            <button id="textModeBtn" class="text-mode-btn">Grab Text</button>
+                        </div>
+                    </div>
+
+                    <div class="section-title" style="margin-top: 8px;">⚡ Actions</div>
+                    <div class="action-buttons">
+                        <button id="drawModeBtn" class="action-btn draw">✏️ Draw</button>
+                        <button id="eraseModeBtn" class="action-btn erase">🧽 Erase</button>
+                        <button id="clearBtn" class="action-btn clear">🗑 Clear</button>
+                    </div>
+                    <div class="action-buttons">
+                        <button id="undoBtn" class="action-btn small">↩ Undo</button>
+                        <button id="redoBtn" class="action-btn small">↪ Redo</button>
+                        <button id="saveBtn" class="action-btn small">💾 Save</button>
+                    </div>
+                </div>
+
+                <!-- Center - Canvas -->
+                <div class="canvas-area">
+                    <div class="canvas-container" id="canvasContainer">
+                        <video id="video" autoplay playsinline muted></video>
+                        <canvas id="drawingCanvas"></canvas>
+                        <canvas id="overlayCanvas"></canvas>
+                        <canvas id="effectsCanvas"></canvas>
+                    </div>
+                    <div class="canvas-label">
+                        <span class="live-badge">● LIVE</span>
+                        <span>AI Tracking Active</span>
+                        <span id="handStatus">Confidence: 97%</span>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Stats -->
+                <div class="stats-panel">
+                    <div class="stats-card">
+                        <div class="stats-title">📊 Session Stats</div>
+                        <div class="stat-item">
+                            <span>Session Time:</span>
+                            <span id="timerDisplay">00:00:00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Total Strokes:</span>
+                            <span id="strokeCount">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Hands Detected:</span>
+                            <span id="handsDetected">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Current Mode:</span>
+                            <span id="currentModeDisplay">Idle</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>FPS:</span>
+                            <span id="fpsValue">28</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-card">
+                        <div class="stats-title">🤖 AI Status</div>
+                        <div class="stat-item">
+                            <span>Model:</span>
+                            <span>MediaPipe Hands</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Status:</span>
+                            <span class="status-badge running">Running</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Accuracy:</span>
+                            <span id="accuracyValue">97.3</span>%
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features & Highlights - NO BLANK SPACE -->
+            <div class="bottom-sections">
+                <div class="features-section">
+                    <h3 class="features-title">✨ Features</h3>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🎨</div>
+                            <div class="feature-title">Real-time Drawing</div>
+                            <div class="feature-desc">Draw in the air using hand movements</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🤖</div>
+                            <div class="feature-title">AI Detection</div>
+                            <div class="feature-desc">MediaPipe tracks hand landmarks</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">✍️</div>
+                            <div class="feature-title">Text in Air</div>
+                            <div class="feature-desc">Type and place text with gestures</div>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🧽</div>
+                            <div class="feature-title">Erase Gestures</div>
+                            <div class="feature-desc">Two-finger gesture to erase</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlights-section">
+                    <div class="highlights-grid">
+                        <span class="highlight-item">🖐️ Real-time Hand Tracking</span>
+                        <span class="highlight-item">🎯 High Accuracy Detection</span>
+                        <span class="highlight-item">✨ Interactive UI/UX</span>
+                        <span class="highlight-item">⚡ Lightweight & Fast</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== AI DETECTION TAB ===== -->
+        <div class="tab-content" id="aiTab" style="display: none;">
+            <div class="ai-detection-full">
+                <h2>🤖 AI Hand Tracking Analysis</h2>
+                <p>Real-time gesture recognition using MediaPipe</p>
+                <div class="ai-stats-grid">
+                    <div class="ai-stat-card">
+                        <div class="ai-stat-value" id="aiConfidence">97.3%</div>
+                        <div class="ai-stat-label">Detection Confidence</div>
+                    </div>
+                    <div class="ai-stat-card">
+                        <div class="ai-stat-value" id="aiFPS">28</div>
+                        <div class="ai-stat-label">Frames Per Second</div>
+                    </div>
+                    <div class="ai-stat-card">
+                        <div class="ai-stat-value" id="aiLatency">32ms</div>
+                        <div class="ai-stat-label">Inference Time</div>
+                    </div>
+                    <div class="ai-stat-card">
+                        <div class="ai-stat-value">21</div>
+                        <div class="ai-stat-label">Hand Landmarks</div>
+                    </div>
+                </div>
+                <div class="fps-chart-container">
+                    <canvas id="fpsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== GESTURE GUIDE TAB ===== -->
+        <div class="tab-content" id="gesturesTab" style="display: none;">
+            <div class="gesture-guide-full">
+                <h2>✋ Gesture Guide</h2>
+                <div class="gesture-grid">
+                    <div class="gesture-card">
+                        <div class="gesture-icon">☝️</div>
+                        <div class="gesture-name">Draw Mode</div>
+                        <div class="gesture-desc">Index finger up - Start drawing</div>
+                    </div>
+                    <div class="gesture-card">
+                        <div class="gesture-icon">✌️</div>
+                        <div class="gesture-name">Erase Mode</div>
+                        <div class="gesture-desc">Two fingers up - Erase drawings</div>
+                    </div>
+                    <div class="gesture-card">
+                        <div class="gesture-icon">✊</div>
+                        <div class="gesture-name">Stop/Pause</div>
+                        <div class="gesture-desc">Fist - Stop drawing</div>
+                    </div>
+                    <div class="gesture-card">
+                        <div class="gesture-icon">✍️</div>
+                        <div class="gesture-name">Text Mode</div>
+                        <div class="gesture-desc">Click "Grab Text" then point to place</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SETTINGS TAB ===== -->
+        <div class="tab-content" id="settingsTab" style="display: none;">
+            <div class="settings-full">
+                <h2>⚙️ Settings</h2>
+                <div class="settings-grid">
+                    <div class="setting-card">
+                        <label>Smoothing Level</label>
+                        <input type="range" id="smoothingLevel" min="1" max="10" value="5">
+                    </div>
+                    <div class="setting-card">
+                        <label>Particle Effects</label>
+                        <label class="switch">
+                            <input type="checkbox" id="particlesToggle" checked>
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-card">
+                        <label>Sound Effects</label>
+                        <label class="switch">
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span class="slider-round"></span>
+                        </label>
+                    </div>
+                    <div class="setting-card">
+                        <label>Camera Resolution</label>
+                        <select id="resolution">
+                            <option value="640x480">640 x 480</option>
+                            <option value="1280x720" selected>1280 x 720</option>
+                            <option value="1920x1080">1920 x 1080</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<footer class="dashboard-footer">
+   © 2026 Air Canvas Drawing • Developed by <strong>Chandan Prit Singh</strong>
+</footer>
+
+<!-- Scripts -->
+<script src="js/sound.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/drawing.js"></script>
+<script src="js/gestures.js"></script>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>
+</html>
